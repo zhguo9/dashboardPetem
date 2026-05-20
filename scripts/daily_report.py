@@ -11,7 +11,7 @@ import base64
 
 # 项目路径
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_DIR)
+sys.path.insert(0, os.path.join(PROJECT_DIR, "meituan"))
 
 # 确保有数据
 from generate_sample_data import generate
