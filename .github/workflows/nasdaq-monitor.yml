@@ -1,0 +1,34 @@
+name: NASDAQ 回撤监控
+
+on:
+  schedule:
+    # 北京时间每天早上 8:00 = UTC 0:00
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  check-nasdaq:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 获取纳斯达克数据并计算回撤
+        id: monitor
+        run: python scripts/nasdaq_monitor.py
+
+      - name: 推送飞书通知（回撤超过阈值时）
+        if: steps.monitor.outputs.alert == 'true'
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$FEISHU_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "$(cat /tmp/nasdaq_alert.json)" 2>&1 || echo "飞书推送失败（未配置 webhook）"
