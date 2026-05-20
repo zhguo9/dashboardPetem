@@ -2,24 +2,29 @@
 
 自动化监控工具箱 — 定时跑在 GitHub Actions 上，不依赖本地电脑。
 
-## 已部署的任务
+## 📊 美团数据日报
 
-### 📈 NASDAQ 回撤监控
-- ⏰ 每天 **北京时间 08:00** 自动运行
-- 📊 获取纳斯达克综合指数近6个月数据
-- 🔔 回撤超过 **8%** 时发送飞书警报
-- 🔧 可在 `.github/workflows/nasdaq-monitor.yml` 中调整阈值
+- ⏰ 每天 **北京时间 09:00** 自动运行
+- 🏪 监控 200 家门店的运营数据
+- 📈 30天趋势分析（订单量/销售额/退款率）
+- 🔔 异动检测（Z-Score 异常识别）
+- 🏥 门店健康度评分排行
+- 📍 自动生成样本数据，开箱即用
 
-## 配置
-
-### 飞书机器人通知（可选）
-如需要收到飞书通知，在 GitHub 仓库 Settings → Secrets and variables → Actions 中添加：
+### 飞书通知（可选）
+如需收到飞书推送，在仓库 Settings → Secrets → Actions 中添加：
 
 | Secret | 说明 |
 |--------|------|
 | `FEISHU_WEBHOOK_URL` | 飞书群机器人 webhook 地址 |
 
-> 没有配置 webhook 时，可以在 Actions 运行日志中查看结果。
+> 未配置时可在 Actions 日志中查看每日报告。
+
+## 📈 NASDAQ 回撤监控
+
+- ⏰ 每天 **北京时间 08:00** 自动运行
+- 📊 监控纳斯达克综合指数近 6 个月数据
+- 🔔 回撤超过 **8%** 时触发买入信号
 
 ## 手动触发
-在 GitHub 仓库 → Actions → 对应 workflow → "Run workflow" 即可手动执行。
+仓库 → Actions → 对应 workflow → "Run workflow" 即可手动执行。
