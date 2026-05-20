@@ -1,0 +1,36 @@
+name: 美团数据日报 📊
+
+on:
+  schedule:
+    # 北京时间每天早上 9:00 = UTC 1:00
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: |
+          pip install --quiet pandas numpy scipy plotly streamlit
+
+      - name: 生成日报
+        id: report
+        working-directory: ./
+        run: python scripts/daily_report.py
+
+      - name: 推送飞书通知（有异常时）
+        if: steps.report.outputs.has_critical == 'true'
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: |
+          echo "⚠️ 检测到严重异常，如需飞书推送请配置 FEISHU_WEBHOOK_URL"
+          echo "  仓库 → Settings → Secrets and variables → Actions"
+          echo "  添加 FEISHU_WEBHOOK_URL = 飞书群机器人 webhook 地址"
