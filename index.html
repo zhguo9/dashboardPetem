@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美团数据看板 - 2026-09-06</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0F0F23;
+            color: #EAEAEA;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid #2A2A4E; margin-bottom: 24px;
+        }
+        .header h1 { font-size: 1.8rem; color: #FFD100; }
+        .header .date { color: #888; font-size: 0.9rem; }
+
+        /* KPI Cards */
+        .kpi-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: #1A1A2E; border-radius: 12px; padding: 20px;
+            border: 1px solid #2A2A4E; text-align: center;
+        }
+        .kpi-value { font-size: 1.8rem; font-weight: 700; color: #FFD100; }
+        .kpi-label { font-size: 0.85rem; color: #888; margin-top: 6px; }
+
+        /* Charts */
+        .chart-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 16px; margin-bottom: 24px;
+        }
+        .chart-card {
+            background: #1A1A2E; border-radius: 12px; padding: 16px;
+            border: 1px solid #2A2A4E;
+        }
+        .chart-full { grid-column: 1 / -1; }
+
+        /* Alerts */
+        .alert-list { margin-bottom: 24px; }
+        .alert-item {
+            background: #1A1A2E; border-radius: 8px; padding: 12px 16px;
+            margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+            border-left: 4px solid #FFD100;
+        }
+        .alert-critical { border-left-color: #FF1744; }
+        .alert-warning { border-left-color: #FF9100; }
+        .alert-ok { border-left-color: #00C853; }
+        .alert-icon { font-size: 1.2rem; }
+        .alert-text { flex: 1; }
+        .alert-direction { color: #FF9100; font-weight: 600; }
+
+        /* Stats list */
+        .stats-card {
+            background: #1A1A2E; border-radius: 12px; padding: 16px;
+            border: 1px solid #2A2A4E; margin-bottom: 16px;
+        }
+        .stats-card h3 { color: #FFD100; margin-bottom: 12px; font-size: 1rem; }
+        .stat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid #2A2A4E;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-value { color: #FFD100; font-weight: 600; }
+        .stat-score { color: #00C853; font-weight: 600; }
+        .stat-rank { color: #888; width: 30px; }
+
+        /* Footer */
+        .footer {
+            text-align: center; padding: 20px; color: #555;
+            font-size: 0.8rem; border-top: 1px solid #2A2A4E; margin-top: 24px;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        .tag-up { background: #00C85333; color: #00C853; }
+        .tag-down { background: #FF174433; color: #FF1744; }
+
+        @media (max-width: 768px) {
+            .chart-row { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 美团数据看板</h1>
+            <span class="date">更新于 2026-09-06 · 每日 09:00 自动更新</span>
+        </div>
+
+        <!-- KPI -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-value">200</div>
+                <div class="kpi-label">🏪 营业门店</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">616,439</div>
+                <div class="kpi-label">📦 总订单 (30天)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">¥18018万</div>
+                <div class="kpi-label">💰 总销售额 (30天)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">463,368</div>
+                <div class="kpi-label">💳 总核销 (30天)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">3.9%</div>
+                <div class="kpi-label">🔙 退款率</div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <h2 style="color:#FFD100; margin-bottom:12px;">🔔 异动检测</h2>
+        <div class="alert-list">
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京通州区美甲35号店</strong> (北京)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京顺义区美甲41号店</strong> (北京)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京大兴区皮肤管理60号店</strong> (北京)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京顺义区美容66号店</strong> (北京)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海黄浦区SPA14号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海长宁区SPA22号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海普陀区美发27号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海杨浦区美甲39号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海虹口区SPA44号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海杨浦区SPA59号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海静安区SPA60号店</strong> (上海)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙岗区SPA19号店</strong> (深圳)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳盐田区美甲24号店</strong> (深圳)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳盐田区美甲53号店</strong> (深圳)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙华区美甲57号店</strong> (深圳)</span>
+            <span class="alert-metric">orders</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京通州区美容16号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京东城区美甲17号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京丰台区美发36号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京丰台区美甲50号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京顺义区美容52号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京大兴区皮肤管理62号店</strong> (北京)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海黄浦区SPA14号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海闵行区皮肤管理19号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海闵行区SPA24号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海闵行区美甲37号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海虹口区SPA44号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海杨浦区美甲50号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海静安区SPA60号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海虹口区美发62号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海虹口区美容63号店</strong> (上海)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳罗湖区美发6号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳光明区美甲18号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳坪山区美容41号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳光明区美容43号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳盐田区美甲53号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳南山区美容55号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙华区美甲57号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙华区皮肤管理59号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳光明区皮肤管理60号店</strong> (深圳)</span>
+            <span class="alert-metric">revenue</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京丰台区美发14号店</strong> (北京)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>北京大兴区皮肤管理60号店</strong> (北京)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海长宁区SPA22号店</strong> (上海)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海普陀区美发27号店</strong> (上海)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海虹口区SPA44号店</strong> (上海)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>上海浦东新区美发45号店</strong> (上海)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙岗区SPA19号店</strong> (深圳)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.2</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳盐田区美甲24号店</strong> (深圳)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳光明区美甲54号店</strong> (深圳)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.0</span>
+        </div>
+        <div class="alert-item alert-warning">
+            <span class="alert-icon">🟡</span>
+            <span class="alert-text"><strong>深圳龙华区美甲57号店</strong> (深圳)</span>
+            <span class="alert-metric">foot traffic</span>
+            <span class="alert-direction">大涨</span>
+            <span class="alert-zscore">Z=2.1</span>
+        </div></div>
+
+        <!-- Charts -->
+        <div class="chart-row">
+            <div class="chart-card chart-full"><div style="height:100%; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.0.0.min.js" integrity="sha256-FEYfO0yRyLtZCpnW0Dw/0DHKQO7Afrq3ml4+rBB818o=" crossorigin="anonymous"></script>                <div id="<div id="chart-revenue"></div></div>
+        </div>
+
+        <!-- Side by side -->
+        <div class="chart-row">
+            <div class="chart-card"><div id="chart-orders"></div></div>
+            <div class="chart-card"><div id="chart-city"></div></div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-card chart-full"><div id="chart-scores"></div></div>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+            <div class="stats-card">
+                <h3>🌆 城市排行</h3>
+                
+        <div class="stat-row">
+            <span class="stat-label">北京</span>
+            <span class="stat-value">216,524单</span>
+            <span class="stat-value">¥64,049,616</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">上海</span>
+            <span class="stat-value">215,104单</span>
+            <span class="stat-value">¥62,071,220</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">深圳</span>
+            <span class="stat-value">184,811单</span>
+            <span class="stat-value">¥54,060,473</span>
+        </div>
+            </div>
+            <div class="stats-card">
+                <h3>🏆 健康分 TOP 5</h3>
+                
+        <div class="stat-row">
+            <span class="stat-rank">#1</span>
+            <span class="stat-label">深圳罗湖区美容34号店</span>
+            <span class="stat-score">91.5分</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-rank">#2</span>
+            <span class="stat-label">北京海淀区皮肤管理5号店</span>
+            <span class="stat-score">91.2分</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-rank">#3</span>
+            <span class="stat-label">深圳盐田区美发51号店</span>
+            <span class="stat-score">91.0分</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-rank">#4</span>
+            <span class="stat-label">北京海淀区美发1号店</span>
+            <span class="stat-score">91.0分</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-rank">#5</span>
+            <span class="stat-label">北京丰台区美发30号店</span>
+            <span class="stat-score">90.8分</span>
+        </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            美团数据看板 · 由 GitHub Actions 自动生成 · 数据来源：模拟样本
+        </div>
+    </div>
+
+    <script>
+        // Inject chart data
+        var charts = "<div style=\"height:100%; width:100%;\">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n        <script charset=\"utf-8\" src=\"https://cdn.plot.ly/plotly-4.0.0.min.js\" integrity=\"sha256-FEYfO0yRyLtZCpnW0Dw/0DHKQO7Afrq3ml4+rBB818o=\" crossorigin=\"anonymous\"></script>                <div id=\"chart-revenue\" class=\"plotly-graph-div\" style=\"height:100%; width:100%;\"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById(\"chart-revenue\")) {                    Plotly.newPlot(                        \"chart-revenue\",                        [{\"hovertemplate\":\"date=%{x}\\u003cbr\\u003e\\u9500\\u552e\\u989d=%{y}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\",\"line\":{\"color\":\"#FFD100\",\"dash\":\"solid\"},\"marker\":{\"symbol\":\"circle\"},\"mode\":\"lines\",\"name\":\"\",\"orientation\":\"v\",\"showlegend\":false,\"x\":[\"2026-08-07\",\"2026-08-08\",\"2026-08-09\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-15\",\"2026-08-16\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-22\",\"2026-08-23\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-29\",\"2026-08-30\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-05\",\"2026-09-06\"],\"xaxis\":\"x\",\"y\":{\"dtype\":\"f8\",\"bdata\":\"AAAAgOGwTUEAAADg2dZhQQAAAEARJWJBAAAAAKkhT0EAAACALPdNQQAAAICtdU9BAAAAgNITT0EAAACA9I1OQQAAAMDrtWNBAAAAQLc\\u002fYkEAAACAvxhPQQAAAIB3p0xBAAAAAI9fTEEAAABAdWpQQQAAAICnbVBBAAAAAHR5YUEAAACg7PthQQAAAEByMVBBAAAAAJzCTUEAAACAxktQQQAAAICuV05BAAAAAAI0T0EAAAAgGL9hQQAAAECtZmFBAAAAgKMFUEEAAAAAIa9NQQAAAACBQ05BAAAAAKB3T0EAAACA029PQQAAAGCsc2JBAAAAwPVyYkE=\"},\"yaxis\":\"y\",\"type\":\"scatter\"}],                        {\"template\":{\"data\":{\"barpolar\":[{\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"barpolar\"}],\"bar\":[{\"error_x\":{\"color\":\"#f2f5fa\"},\"error_y\":{\"color\":\"#f2f5fa\"},\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"bar\"}],\"carpet\":[{\"aaxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"baxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"type\":\"carpet\"}],\"choropleth\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"choropleth\"}],\"contourcarpet\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"contourcarpet\"}],\"contour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"contour\"}],\"heatmap\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"heatmap\"}],\"histogram2dcontour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2dcontour\"}],\"histogram2d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2d\"}],\"histogram\":[{\"marker\":{\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"histogram\"}],\"mesh3d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"mesh3d\"}],\"parcoords\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"parcoords\"}],\"pie\":[{\"automargin\":true,\"type\":\"pie\"}],\"scatter3d\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatter3d\"}],\"scattercarpet\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattercarpet\"}],\"scattergeo\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattergeo\"}],\"scattergl\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scattergl\"}],\"scattermap\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattermap\"}],\"scatterpolargl\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolargl\"}],\"scatterpolar\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolar\"}],\"scatter\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scatter\"}],\"scatterternary\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterternary\"}],\"surface\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"surface\"}],\"table\":[{\"cells\":{\"fill\":{\"color\":\"#506784\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"header\":{\"fill\":{\"color\":\"#2a3f5f\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"type\":\"table\"}]},\"layout\":{\"annotationdefaults\":{\"arrowcolor\":\"#f2f5fa\",\"arrowhead\":0,\"arrowwidth\":1},\"autotypenumbers\":\"strict\",\"coloraxis\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"colorscale\":{\"diverging\":[[0,\"#8e0152\"],[0.1,\"#c51b7d\"],[0.2,\"#de77ae\"],[0.3,\"#f1b6da\"],[0.4,\"#fde0ef\"],[0.5,\"#f7f7f7\"],[0.6,\"#e6f5d0\"],[0.7,\"#b8e186\"],[0.8,\"#7fbc41\"],[0.9,\"#4d9221\"],[1,\"#276419\"]],\"sequential\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"sequentialminus\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]]},\"colorway\":[\"#636efa\",\"#EF553B\",\"#00cc96\",\"#ab63fa\",\"#FFA15A\",\"#19d3f3\",\"#FF6692\",\"#B6E880\",\"#FF97FF\",\"#FECB52\"],\"font\":{\"color\":\"#f2f5fa\"},\"geo\":{\"bgcolor\":\"rgb(17,17,17)\",\"lakecolor\":\"rgb(17,17,17)\",\"landcolor\":\"rgb(17,17,17)\",\"showlakes\":true,\"showland\":true,\"subunitcolor\":\"#506784\"},\"hoverlabel\":{\"align\":\"left\"},\"hovermode\":\"closest\",\"paper_bgcolor\":\"rgb(17,17,17)\",\"plot_bgcolor\":\"rgb(17,17,17)\",\"polar\":{\"angularaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"radialaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"scene\":{\"xaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"yaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"zaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"}},\"shapedefaults\":{\"line\":{\"color\":\"#f2f5fa\"}},\"sliderdefaults\":{\"bgcolor\":\"#C8D4E3\",\"bordercolor\":\"rgb(17,17,17)\",\"borderwidth\":1,\"tickwidth\":0},\"ternary\":{\"aaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"baxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"caxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"title\":{\"x\":0.05},\"updatemenudefaults\":{\"bgcolor\":\"#506784\",\"borderwidth\":0},\"xaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2},\"yaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2}}},\"xaxis\":{\"anchor\":\"y\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"date\"}},\"yaxis\":{\"anchor\":\"x\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"\\u9500\\u552e\\u989d\"}},\"legend\":{\"tracegroupgap\":0},\"title\":{\"text\":\"\\ud83d\\udcc8 \\u8fd130\\u5929\\u9500\\u552e\\u989d\\u8d8b\\u52bf\"},\"margin\":{\"l\":20,\"r\":20,\"t\":40,\"b\":20}},                        {\"responsive\": true}                    )                };            </script>        </div><div style=\"height:100%; width:100%;\">                            <div id=\"chart-orders\" class=\"plotly-graph-div\" style=\"height:100%; width:100%;\"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById(\"chart-orders\")) {                    Plotly.newPlot(                        \"chart-orders\",                        [{\"hovertemplate\":\"date=%{x}\\u003cbr\\u003e\\u8ba2\\u5355\\u91cf=%{y}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\",\"line\":{\"color\":\"#2979FF\",\"dash\":\"solid\"},\"marker\":{\"symbol\":\"circle\"},\"mode\":\"lines\",\"name\":\"\",\"orientation\":\"v\",\"showlegend\":false,\"x\":[\"2026-08-07\",\"2026-08-08\",\"2026-08-09\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-15\",\"2026-08-16\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-22\",\"2026-08-23\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-29\",\"2026-08-30\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-05\",\"2026-09-06\"],\"xaxis\":\"x\",\"y\":{\"dtype\":\"i4\",\"bdata\":\"1zQAAOF9AACvfwAAkzUAALU0AAA5NgAAeDgAAFk1AADXhgAAI3wAAGc1AABANQAANTQAAGk2AAD\\u002fNwAAxXsAANJ6AAD+NgAAXjUAAF88AADbNQAAGDQAAJ17AAA\\u002ffQAA7zYAAAo2AABLNwAAUjYAAH83AABqgwAAYH8AAA==\"},\"yaxis\":\"y\",\"type\":\"scatter\"}],                        {\"template\":{\"data\":{\"barpolar\":[{\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"barpolar\"}],\"bar\":[{\"error_x\":{\"color\":\"#f2f5fa\"},\"error_y\":{\"color\":\"#f2f5fa\"},\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"bar\"}],\"carpet\":[{\"aaxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"baxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"type\":\"carpet\"}],\"choropleth\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"choropleth\"}],\"contourcarpet\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"contourcarpet\"}],\"contour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"contour\"}],\"heatmap\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"heatmap\"}],\"histogram2dcontour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2dcontour\"}],\"histogram2d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2d\"}],\"histogram\":[{\"marker\":{\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"histogram\"}],\"mesh3d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"mesh3d\"}],\"parcoords\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"parcoords\"}],\"pie\":[{\"automargin\":true,\"type\":\"pie\"}],\"scatter3d\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatter3d\"}],\"scattercarpet\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattercarpet\"}],\"scattergeo\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattergeo\"}],\"scattergl\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scattergl\"}],\"scattermap\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattermap\"}],\"scatterpolargl\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolargl\"}],\"scatterpolar\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolar\"}],\"scatter\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scatter\"}],\"scatterternary\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterternary\"}],\"surface\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"surface\"}],\"table\":[{\"cells\":{\"fill\":{\"color\":\"#506784\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"header\":{\"fill\":{\"color\":\"#2a3f5f\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"type\":\"table\"}]},\"layout\":{\"annotationdefaults\":{\"arrowcolor\":\"#f2f5fa\",\"arrowhead\":0,\"arrowwidth\":1},\"autotypenumbers\":\"strict\",\"coloraxis\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"colorscale\":{\"diverging\":[[0,\"#8e0152\"],[0.1,\"#c51b7d\"],[0.2,\"#de77ae\"],[0.3,\"#f1b6da\"],[0.4,\"#fde0ef\"],[0.5,\"#f7f7f7\"],[0.6,\"#e6f5d0\"],[0.7,\"#b8e186\"],[0.8,\"#7fbc41\"],[0.9,\"#4d9221\"],[1,\"#276419\"]],\"sequential\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"sequentialminus\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]]},\"colorway\":[\"#636efa\",\"#EF553B\",\"#00cc96\",\"#ab63fa\",\"#FFA15A\",\"#19d3f3\",\"#FF6692\",\"#B6E880\",\"#FF97FF\",\"#FECB52\"],\"font\":{\"color\":\"#f2f5fa\"},\"geo\":{\"bgcolor\":\"rgb(17,17,17)\",\"lakecolor\":\"rgb(17,17,17)\",\"landcolor\":\"rgb(17,17,17)\",\"showlakes\":true,\"showland\":true,\"subunitcolor\":\"#506784\"},\"hoverlabel\":{\"align\":\"left\"},\"hovermode\":\"closest\",\"paper_bgcolor\":\"rgb(17,17,17)\",\"plot_bgcolor\":\"rgb(17,17,17)\",\"polar\":{\"angularaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"radialaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"scene\":{\"xaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"yaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"zaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"}},\"shapedefaults\":{\"line\":{\"color\":\"#f2f5fa\"}},\"sliderdefaults\":{\"bgcolor\":\"#C8D4E3\",\"bordercolor\":\"rgb(17,17,17)\",\"borderwidth\":1,\"tickwidth\":0},\"ternary\":{\"aaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"baxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"caxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"title\":{\"x\":0.05},\"updatemenudefaults\":{\"bgcolor\":\"#506784\",\"borderwidth\":0},\"xaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2},\"yaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2}}},\"xaxis\":{\"anchor\":\"y\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"date\"}},\"yaxis\":{\"anchor\":\"x\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"\\u8ba2\\u5355\\u91cf\"}},\"legend\":{\"tracegroupgap\":0},\"title\":{\"text\":\"\\ud83d\\udce6 \\u8fd130\\u5929\\u8ba2\\u5355\\u91cf\\u8d8b\\u52bf\"},\"margin\":{\"l\":20,\"r\":20,\"t\":40,\"b\":20}},                        {\"responsive\": true}                    )                };            </script>        </div><div style=\"height:100%; width:100%;\">                            <div id=\"chart-city\" class=\"plotly-graph-div\" style=\"height:100%; width:100%;\"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById(\"chart-city\")) {                    Plotly.newPlot(                        \"chart-city\",                        [{\"hovertemplate\":\"city=%{x}\\u003cbr\\u003etotal_revenue=%{text}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\\u5317\\u4eac\",\"marker\":{\"color\":\"rgb(102,194,165)\",\"pattern\":{\"shape\":\"\"}},\"name\":\"\\u5317\\u4eac\",\"orientation\":\"v\",\"showlegend\":true,\"text\":{\"dtype\":\"f8\",\"bdata\":\"AAAAgI6KjkE=\"},\"textposition\":\"outside\",\"x\":[\"\\u5317\\u4eac\"],\"xaxis\":\"x\",\"y\":{\"dtype\":\"f8\",\"bdata\":\"AAAAgI6KjkE=\"},\"yaxis\":\"y\",\"type\":\"bar\",\"texttemplate\":\"%{text:,.0f}\"},{\"hovertemplate\":\"city=%{x}\\u003cbr\\u003etotal_revenue=%{text}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\\u4e0a\\u6d77\",\"marker\":{\"color\":\"rgb(252,141,98)\",\"pattern\":{\"shape\":\"\"}},\"name\":\"\\u4e0a\\u6d77\",\"orientation\":\"v\",\"showlegend\":true,\"text\":{\"dtype\":\"f8\",\"bdata\":\"AAAAoA2ZjUE=\"},\"textposition\":\"outside\",\"x\":[\"\\u4e0a\\u6d77\"],\"xaxis\":\"x\",\"y\":{\"dtype\":\"f8\",\"bdata\":\"AAAAoA2ZjUE=\"},\"yaxis\":\"y\",\"type\":\"bar\",\"texttemplate\":\"%{text:,.0f}\"},{\"hovertemplate\":\"city=%{x}\\u003cbr\\u003etotal_revenue=%{text}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\\u6df1\\u5733\",\"marker\":{\"color\":\"rgb(141,160,203)\",\"pattern\":{\"shape\":\"\"}},\"name\":\"\\u6df1\\u5733\",\"orientation\":\"v\",\"showlegend\":true,\"text\":{\"dtype\":\"f8\",\"bdata\":\"AAAAyC3HiUE=\"},\"textposition\":\"outside\",\"x\":[\"\\u6df1\\u5733\"],\"xaxis\":\"x\",\"y\":{\"dtype\":\"f8\",\"bdata\":\"AAAAyC3HiUE=\"},\"yaxis\":\"y\",\"type\":\"bar\",\"texttemplate\":\"%{text:,.0f}\"}],                        {\"template\":{\"data\":{\"barpolar\":[{\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"barpolar\"}],\"bar\":[{\"error_x\":{\"color\":\"#f2f5fa\"},\"error_y\":{\"color\":\"#f2f5fa\"},\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"bar\"}],\"carpet\":[{\"aaxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"baxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"type\":\"carpet\"}],\"choropleth\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"choropleth\"}],\"contourcarpet\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"contourcarpet\"}],\"contour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"contour\"}],\"heatmap\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"heatmap\"}],\"histogram2dcontour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2dcontour\"}],\"histogram2d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2d\"}],\"histogram\":[{\"marker\":{\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"histogram\"}],\"mesh3d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"mesh3d\"}],\"parcoords\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"parcoords\"}],\"pie\":[{\"automargin\":true,\"type\":\"pie\"}],\"scatter3d\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatter3d\"}],\"scattercarpet\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattercarpet\"}],\"scattergeo\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattergeo\"}],\"scattergl\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scattergl\"}],\"scattermap\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattermap\"}],\"scatterpolargl\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolargl\"}],\"scatterpolar\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolar\"}],\"scatter\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scatter\"}],\"scatterternary\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterternary\"}],\"surface\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"surface\"}],\"table\":[{\"cells\":{\"fill\":{\"color\":\"#506784\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"header\":{\"fill\":{\"color\":\"#2a3f5f\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"type\":\"table\"}]},\"layout\":{\"annotationdefaults\":{\"arrowcolor\":\"#f2f5fa\",\"arrowhead\":0,\"arrowwidth\":1},\"autotypenumbers\":\"strict\",\"coloraxis\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"colorscale\":{\"diverging\":[[0,\"#8e0152\"],[0.1,\"#c51b7d\"],[0.2,\"#de77ae\"],[0.3,\"#f1b6da\"],[0.4,\"#fde0ef\"],[0.5,\"#f7f7f7\"],[0.6,\"#e6f5d0\"],[0.7,\"#b8e186\"],[0.8,\"#7fbc41\"],[0.9,\"#4d9221\"],[1,\"#276419\"]],\"sequential\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"sequentialminus\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]]},\"colorway\":[\"#636efa\",\"#EF553B\",\"#00cc96\",\"#ab63fa\",\"#FFA15A\",\"#19d3f3\",\"#FF6692\",\"#B6E880\",\"#FF97FF\",\"#FECB52\"],\"font\":{\"color\":\"#f2f5fa\"},\"geo\":{\"bgcolor\":\"rgb(17,17,17)\",\"lakecolor\":\"rgb(17,17,17)\",\"landcolor\":\"rgb(17,17,17)\",\"showlakes\":true,\"showland\":true,\"subunitcolor\":\"#506784\"},\"hoverlabel\":{\"align\":\"left\"},\"hovermode\":\"closest\",\"paper_bgcolor\":\"rgb(17,17,17)\",\"plot_bgcolor\":\"rgb(17,17,17)\",\"polar\":{\"angularaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"radialaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"scene\":{\"xaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"yaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"zaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"}},\"shapedefaults\":{\"line\":{\"color\":\"#f2f5fa\"}},\"sliderdefaults\":{\"bgcolor\":\"#C8D4E3\",\"bordercolor\":\"rgb(17,17,17)\",\"borderwidth\":1,\"tickwidth\":0},\"ternary\":{\"aaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"baxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"caxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"title\":{\"x\":0.05},\"updatemenudefaults\":{\"bgcolor\":\"#506784\",\"borderwidth\":0},\"xaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2},\"yaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2}}},\"xaxis\":{\"anchor\":\"y\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"city\"},\"categoryorder\":\"array\",\"categoryarray\":[\"\\u5317\\u4eac\",\"\\u4e0a\\u6d77\",\"\\u6df1\\u5733\"]},\"yaxis\":{\"anchor\":\"x\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"total_revenue\"}},\"legend\":{\"title\":{\"text\":\"city\"},\"tracegroupgap\":0},\"title\":{\"text\":\"\\ud83c\\udf06 \\u5404\\u57ce\\u5e02\\u9500\\u552e\\u989d\\u5bf9\\u6bd4\"},\"barmode\":\"relative\",\"margin\":{\"l\":20,\"r\":20,\"t\":40,\"b\":20},\"showlegend\":false},                        {\"responsive\": true}                    )                };            </script>        </div><div style=\"height:100%; width:100%;\">                            <div id=\"chart-scores\" class=\"plotly-graph-div\" style=\"height:100%; width:100%;\"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById(\"chart-scores\")) {                    Plotly.newPlot(                        \"chart-scores\",                        [{\"hovertemplate\":\"score=%{marker.color}\\u003cbr\\u003estore_name=%{y}\\u003cextra\\u003e\\u003c\\u002fextra\\u003e\",\"legendgroup\":\"\",\"marker\":{\"color\":{\"dtype\":\"f8\",\"bdata\":\"AAAAAADgVkDNzMzMzMxWQAAAAAAAwFZAAAAAAADAVkAzMzMzM7NWQDMzMzMzs1ZAMzMzMzOzVkDNzMzMzKxWQDMzMzMzk1ZAMzMzMzOTVkA=\"},\"coloraxis\":\"coloraxis\",\"pattern\":{\"shape\":\"\"}},\"name\":\"\",\"orientation\":\"h\",\"showlegend\":false,\"text\":{\"dtype\":\"f8\",\"bdata\":\"AAAAAADgVkDNzMzMzMxWQAAAAAAAwFZAAAAAAADAVkAzMzMzM7NWQDMzMzMzs1ZAMzMzMzOzVkDNzMzMzKxWQDMzMzMzk1ZAMzMzMzOTVkA=\"},\"textposition\":\"outside\",\"x\":{\"dtype\":\"f8\",\"bdata\":\"AAAAAADgVkDNzMzMzMxWQAAAAAAAwFZAAAAAAADAVkAzMzMzM7NWQDMzMzMzs1ZAMzMzMzOzVkDNzMzMzKxWQDMzMzMzk1ZAMzMzMzOTVkA=\"},\"xaxis\":\"x\",\"y\":[\"\\u6df1\\u5733\\u7f57\\u6e56\\u533a\\u7f8e\\u5bb934\\u53f7\\u5e97\",\"\\u5317\\u4eac\\u6d77\\u6dc0\\u533a\\u76ae\\u80a4\\u7ba1\\u74065\\u53f7\\u5e97\",\"\\u6df1\\u5733\\u76d0\\u7530\\u533a\\u7f8e\\u53d151\\u53f7\\u5e97\",\"\\u5317\\u4eac\\u6d77\\u6dc0\\u533a\\u7f8e\\u53d11\\u53f7\\u5e97\",\"\\u5317\\u4eac\\u4e30\\u53f0\\u533a\\u7f8e\\u53d130\\u53f7\\u5e97\",\"\\u4e0a\\u6d77\\u9ec4\\u6d66\\u533a\\u7f8e\\u753225\\u53f7\\u5e97\",\"\\u5317\\u4eac\\u671d\\u9633\\u533a\\u7f8e\\u753229\\u53f7\\u5e97\",\"\\u6df1\\u5733\\u798f\\u7530\\u533a\\u7f8e\\u53d135\\u53f7\\u5e97\",\"\\u5317\\u4eac\\u897f\\u57ce\\u533a\\u7f8e\\u75328\\u53f7\\u5e97\",\"\\u6df1\\u5733\\u5149\\u660e\\u533a\\u7f8e\\u5bb943\\u53f7\\u5e97\"],\"yaxis\":\"y\",\"type\":\"bar\",\"texttemplate\":\"%{text}\"}],                        {\"template\":{\"data\":{\"barpolar\":[{\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"barpolar\"}],\"bar\":[{\"error_x\":{\"color\":\"#f2f5fa\"},\"error_y\":{\"color\":\"#f2f5fa\"},\"marker\":{\"line\":{\"color\":\"rgb(17,17,17)\",\"width\":0.5},\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"bar\"}],\"carpet\":[{\"aaxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"baxis\":{\"endlinecolor\":\"#A2B1C6\",\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"minorgridcolor\":\"#506784\",\"startlinecolor\":\"#A2B1C6\"},\"type\":\"carpet\"}],\"choropleth\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"choropleth\"}],\"contourcarpet\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"contourcarpet\"}],\"contour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"contour\"}],\"heatmap\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"heatmap\"}],\"histogram2dcontour\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2dcontour\"}],\"histogram2d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"histogram2d\"}],\"histogram\":[{\"marker\":{\"pattern\":{\"fillmode\":\"overlay\",\"size\":10,\"solidity\":0.2}},\"type\":\"histogram\"}],\"mesh3d\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"type\":\"mesh3d\"}],\"parcoords\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"parcoords\"}],\"pie\":[{\"automargin\":true,\"type\":\"pie\"}],\"scatter3d\":[{\"line\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatter3d\"}],\"scattercarpet\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattercarpet\"}],\"scattergeo\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattergeo\"}],\"scattergl\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scattergl\"}],\"scattermap\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scattermap\"}],\"scatterpolargl\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolargl\"}],\"scatterpolar\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterpolar\"}],\"scatter\":[{\"marker\":{\"line\":{\"color\":\"#283442\"}},\"type\":\"scatter\"}],\"scatterternary\":[{\"marker\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"type\":\"scatterternary\"}],\"surface\":[{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"},\"colorscale\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"type\":\"surface\"}],\"table\":[{\"cells\":{\"fill\":{\"color\":\"#506784\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"header\":{\"fill\":{\"color\":\"#2a3f5f\"},\"line\":{\"color\":\"rgb(17,17,17)\"}},\"type\":\"table\"}]},\"layout\":{\"annotationdefaults\":{\"arrowcolor\":\"#f2f5fa\",\"arrowhead\":0,\"arrowwidth\":1},\"autotypenumbers\":\"strict\",\"coloraxis\":{\"colorbar\":{\"outlinewidth\":0,\"ticks\":\"\"}},\"colorscale\":{\"diverging\":[[0,\"#8e0152\"],[0.1,\"#c51b7d\"],[0.2,\"#de77ae\"],[0.3,\"#f1b6da\"],[0.4,\"#fde0ef\"],[0.5,\"#f7f7f7\"],[0.6,\"#e6f5d0\"],[0.7,\"#b8e186\"],[0.8,\"#7fbc41\"],[0.9,\"#4d9221\"],[1,\"#276419\"]],\"sequential\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]],\"sequentialminus\":[[0.0,\"#0d0887\"],[0.1111111111111111,\"#46039f\"],[0.2222222222222222,\"#7201a8\"],[0.3333333333333333,\"#9c179e\"],[0.4444444444444444,\"#bd3786\"],[0.5555555555555556,\"#d8576b\"],[0.6666666666666666,\"#ed7953\"],[0.7777777777777778,\"#fb9f3a\"],[0.8888888888888888,\"#fdca26\"],[1.0,\"#f0f921\"]]},\"colorway\":[\"#636efa\",\"#EF553B\",\"#00cc96\",\"#ab63fa\",\"#FFA15A\",\"#19d3f3\",\"#FF6692\",\"#B6E880\",\"#FF97FF\",\"#FECB52\"],\"font\":{\"color\":\"#f2f5fa\"},\"geo\":{\"bgcolor\":\"rgb(17,17,17)\",\"lakecolor\":\"rgb(17,17,17)\",\"landcolor\":\"rgb(17,17,17)\",\"showlakes\":true,\"showland\":true,\"subunitcolor\":\"#506784\"},\"hoverlabel\":{\"align\":\"left\"},\"hovermode\":\"closest\",\"paper_bgcolor\":\"rgb(17,17,17)\",\"plot_bgcolor\":\"rgb(17,17,17)\",\"polar\":{\"angularaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"radialaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"scene\":{\"xaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"yaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"},\"zaxis\":{\"backgroundcolor\":\"rgb(17,17,17)\",\"gridcolor\":\"#506784\",\"gridwidth\":2,\"linecolor\":\"#506784\",\"showbackground\":true,\"ticks\":\"\",\"zerolinecolor\":\"#C8D4E3\"}},\"shapedefaults\":{\"line\":{\"color\":\"#f2f5fa\"}},\"sliderdefaults\":{\"bgcolor\":\"#C8D4E3\",\"bordercolor\":\"rgb(17,17,17)\",\"borderwidth\":1,\"tickwidth\":0},\"ternary\":{\"aaxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"baxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"},\"bgcolor\":\"rgb(17,17,17)\",\"caxis\":{\"gridcolor\":\"#506784\",\"linecolor\":\"#506784\",\"ticks\":\"\"}},\"title\":{\"x\":0.05},\"updatemenudefaults\":{\"bgcolor\":\"#506784\",\"borderwidth\":0},\"xaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2},\"yaxis\":{\"automargin\":true,\"gridcolor\":\"#283442\",\"linecolor\":\"#506784\",\"ticks\":\"\",\"title\":{\"standoff\":15},\"zerolinecolor\":\"#283442\",\"zerolinewidth\":2}}},\"xaxis\":{\"anchor\":\"y\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"score\"}},\"yaxis\":{\"anchor\":\"x\",\"domain\":[0.0,1.0],\"title\":{\"text\":\"store_name\"},\"categoryorder\":\"total ascending\"},\"coloraxis\":{\"colorbar\":{\"title\":{\"text\":\"score\"}},\"colorscale\":[[0.0,\"#FF1744\"],[0.3333333333333333,\"#FF9100\"],[0.6666666666666666,\"#FFD100\"],[1.0,\"#00C853\"]],\"autocolorscale\":false},\"legend\":{\"tracegroupgap\":0},\"title\":{\"text\":\"\\ud83c\\udfc6 \\u95e8\\u5e97\\u5065\\u5eb7\\u5206 TOP 10\"},\"barmode\":\"relative\",\"margin\":{\"l\":20,\"r\":20,\"t\":40,\"b\":20}},                        {\"responsive\": true}                    )                };            </script>        </div>";
+    </script>
+</body>
+</html>
